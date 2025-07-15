@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple JS Login Auth</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    .container {
+      max-width: 400px;
+      background: rgb(205, 199, 199);
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    .nav {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .nav a {
+      margin: 0 10px;
+      cursor: pointer;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 id="form-title">Login</h2>
+
+    <div id="login-form">
+      <input type="text" id="login-username" placeholder="Username" required>
+      <input type="password" id="login-password" placeholder="Password" required>
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="register-form" class="hidden">
+      <input type="text" id="register-username" placeholder="Username" required>
+      <input type="password" id="register-password" placeholder="Password" required>
+      <button onclick="register()">Register</button>
+    </div>
+
+    <div id="protected-page" class="hidden">
+      <h3>Welcome, <span id="user-name"></span>! 👋</h3>
+      <p>This is a protected page.</p>
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <div class="nav">
+      <a onclick="showLogin()">Login</a> | <a onclick="showRegister()">Register</a>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const protectedPage = document.getElementById('protected-page');
+    const formTitle = document.getElementById('form-title');
+    const userNameDisplay = document.getElementById('user-name');
+
+    function showLogin() {
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
+      protectedPage.classList.add('hidden');
+      formTitle.textContent = 'Login';
+    }
+
+    function showRegister() {
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      protectedPage.classList.add('hidden');
+      formTitle.textContent = 'Register';
+    }
+
+    function register() {
+      const username = document.getElementById('register-username').value;
+      const password = document.getElementById('register-password').value;
+
+      if (!username || !password) {
+        alert('Please fill all fields.');
+        return;
+      }
+
+      if (localStorage.getItem(`user_${username}`)) {
+        alert('Username already exists.');
+        return;
+      }
+
+      localStorage.setItem(`user_${username}`, JSON.stringify({ password }));
+      alert('Registration successful. Please log in.');
+      showLogin();
+    }
+
+    function login() {
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      const userData = localStorage.getItem(`user_${username}`);
+      if (!userData) {
+        alert('User not found.');
+        return;
+      }
+
+      const user = JSON.parse(userData);
+      if (user.password !== password) {
+        alert('Incorrect password.');
+        return;
+      }
+
+      sessionStorage.setItem('loggedInUser', username);
+      loadProtectedPage(username);
+    }
+
+    function loadProtectedPage(username) {
+      loginForm.classList.add('hidden');
+      registerForm.classList.add('hidden');
+      protectedPage.classList.remove('hidden');
+      formTitle.textContent = 'Protected Page';
+      userNameDisplay.textContent = username;
+    }
+
+    function logout() {
+      sessionStorage.removeItem('loggedInUser');
+      showLogin();
+    }
+
+    // Auto-login if session exists
+    const loggedUser = sessionStorage.getItem('loggedInUser');
+    if (loggedUser) {
+      loadProtectedPage(loggedUser);
+    } else {
+      showLogin();
+    }
+  </script>
+</body>
+</html>
